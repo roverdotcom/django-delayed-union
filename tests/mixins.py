@@ -1,41 +1,26 @@
 import abc
+from builtins import object
 
-from django.contrib.auth.models import Permission
 from django.contrib.auth.models import User
 from django.db.models import F
 from django.db.models import Q
 from django.db.models import QuerySet
-from django.test import TestCase
-
-from django_delayed_union import DelayedUnionQuerySet
-from django_delayed_union.base import DelayedQuerySetBase
-from django_delayed_union.base import DelayedQuerySetDescriptor
+from future.utils import with_metaclass
 
 from .factories import UserFactory
 
 
-class DelayedQuerySetBaseTests(TestCase):
-    def setUp(self):
-        super(DelayedQuerySetBaseTests, self).setUp()
-        self.cls = DelayedUnionQuerySet
+class DelayedQuerySetMetaTestsMixin(with_metaclass(abc.ABCMeta, object)):
+    @abc.abstractmethod
+    def get_class(self):
+        """
+        Returns the subclass of :class:`DelayedQuerySet` to test.
+        """
 
-    def test_has_metaclass(self):
-        self.assertTrue(
-            issubclass(type(self.cls), DelayedQuerySetBase)
-        )
-
-    def test_descriptors_have_names_set(self):
-        for name in dir(self.cls):
-            descriptor = getattr(self.cls, name)
-            if not isinstance(descriptor, DelayedQuerySetDescriptor):
-                continue
-            self.assertEqual(descriptor.name, name)
-
-
-class DelayedQuerySetMetaTests(TestCase):
     def test_matches_public_api_of_queryset(self):
+        cls = self.get_class()
         qs_attrs = set(dir(QuerySet))
-        dqs_attrs = set(dir(DelayedUnionQuerySet))
+        dqs_attrs = set(dir(cls))
         missing = filter(
             lambda attr: not attr.startswith('_'),
             qs_attrs - dqs_attrs
@@ -44,39 +29,36 @@ class DelayedQuerySetMetaTests(TestCase):
             set(),
             (
                 'The following attributes are missing'
-                ' from DelayedQuerySet: {}'
-            ).format(', '.join(sorted(missing)))
+                ' from {}: {}'
+            ).format(cls, ', '.join(sorted(missing)))
         )
 
-    def test_delayed_union_only_accepts_all_as_kwarg(self):
-        with self.assertRaises(TypeError):
-            DelayedUnionQuerySet(
-                User.objects.all(),
-                User.objects.all(),
-                foo=42
-            )
-
     def test_currently_does_not_support_nested_delayed_querysets(self):
+        cls = self.get_class()
         with self.assertRaises(ValueError):
-            DelayedUnionQuerySet(
+            cls(
                 User.objects.all(),
-                DelayedUnionQuerySet(User.objects.all(), User.objects.all())
+                cls(User.objects.all(), User.objects.all())
             )
 
 
-class DelayedUnionQuerySetTestsMixin(object):
-    __metaclass__ = abc.ABCMeta
-
+class DelayedQuerySetTestsMixin(with_metaclass(abc.ABCMeta, object)):
     @classmethod
     def setUpTestData(cls):
-        super(DelayedUnionQuerySetTestsMixin, cls).setUpTestData()
+        super(DelayedQuerySetTestsMixin, cls).setUpTestData()
         cls.user = UserFactory.create()
         cls.bad_id = cls.user.id - 1
 
     def setUp(self):
-        super(DelayedUnionQuerySetTestsMixin, self).setUp()
-        self.regular_qs = User.objects.all()
+        super(DelayedQuerySetTestsMixin, self).setUp()
+        self.regular_qs = User.objects.filter(id=self.user.id)
         self.qs = self.get_queryset()
+
+    @abc.abstractmethod
+    def test_select_related(self):
+        """
+        Subclasses should implement a test that select_related works.
+        """
 
     def test_get(self):
         self.assertEqual(self.qs.get(id=self.user.id), self.user)
@@ -140,15 +122,6 @@ class DelayedUnionQuerySetTestsMixin(object):
             list(self.qs.values_list('id', flat=True)),
             [self.user.id]
         )
-
-    def test_select_related(self):
-        base_qs = Permission.objects.all()
-        qs = DelayedUnionQuerySet(base_qs, base_qs)
-
-        self.assertTrue(base_qs.exists())
-        for permission in qs.select_related('content_type'):
-            with self.assertNumQueries(0):
-                self.assertIsNotNone(permission.content_type.id)
 
     def test_prefetch_related(self):
         for user in self.qs.prefetch_related('groups'):
@@ -287,11 +260,6 @@ class DelayedUnionQuerySetTestsMixin(object):
         self.qs.bulk_create([User(id=4242)])
         self.assertTrue(User.objects.filter(id=4242).exists())
 
-    def test_update(self):
-        self.qs.update(first_name='Rover')
-        for user in self.qs:
-            self.assertEqual(user.first_name, 'Rover')
-
     def test_complex_filter(self):
         qs = self.qs.complex_filter(Q(id=-1))
         self.assertEqual(qs.count(), 0)
@@ -299,110 +267,3 @@ class DelayedUnionQuerySetTestsMixin(object):
     def test_get_or_create(self):
         with self.assertRaises(NotImplementedError):
             self.qs.get_or_create(id=4242)
-
-
-class DelayedUnionQuerySetTests(DelayedUnionQuerySetTestsMixin, TestCase):
-    def get_queryset(self):
-        return DelayedUnionQuerySet(
-            User.objects.all(),
-            User.objects.all(),
-        )
-
-
-class DelayedUnionQuerySetMixedTests(
-        DelayedUnionQuerySetTestsMixin,
-        TestCase):
-
-    def get_queryset(self):
-        return DelayedUnionQuerySet(
-            User.objects.filter(id=self.bad_id),
-            User.objects.all(),
-        )
-
-
-class DelayedUnionQuerySetReversedMixedTests(
-        DelayedUnionQuerySetTestsMixin,
-        TestCase):
-
-    def get_queryset(self):
-        return DelayedUnionQuerySet(
-            User.objects.all(),
-            User.objects.filter(id=self.bad_id),
-        )
-
-
-class DelayedUnionAllMutuallyExclusiveQuerySetTests(
-        DelayedUnionQuerySetTestsMixin,
-        TestCase):
-
-    def get_queryset(self):
-        return DelayedUnionQuerySet(
-            User.objects.filter(id=self.user.id),
-            User.objects.exclude(id=self.user.id),
-            all=True
-        )
-
-
-class DelayedUnionAllQuerySetTests(DelayedUnionQuerySetTestsMixin, TestCase):
-
-    def get_queryset(self):
-        return DelayedUnionQuerySet(
-            User.objects.all(),
-            User.objects.all(),
-            all=True
-        )
-
-    def test_get(self):
-        with self.assertRaises(User.MultipleObjectsReturned):
-            self.qs.get(id=self.user.id)
-
-    def test_repr(self):
-        self.assertEqual(
-            repr(self.qs),
-            '<QuerySet {}>'.format([self.user, self.user])
-        )
-
-    def test_count(self):
-        self.assertEqual(self.qs.count(), 2)
-
-    def test_iter(self):
-        self.assertEqual(list(self.qs), [self.user, self.user])
-
-    def test_order_by(self):
-        second_user = UserFactory.create()
-        self.assertEqual(
-            list(self.qs.order_by('pk')),
-            [self.user] * 2 + [second_user] * 2
-        )
-
-    def test_order_by_reversed(self):
-        second_user = UserFactory.create()
-        self.assertEqual(
-            list(self.qs.order_by('-pk')),
-            [second_user] * 2 + [self.user] * 2
-        )
-
-    def test_reverse(self):
-        second_user = UserFactory.create()
-        self.assertEqual(
-            list(self.qs.order_by('pk').reverse()),
-            [second_user] * 2 + [self.user] * 2
-        )
-
-    def test_values(self):
-        self.assertEqual(
-            list(self.qs.values('id')),
-            [{'id': self.user.id}, {'id': self.user.id}]
-        )
-
-    def test_values_list(self):
-        self.assertEqual(
-            list(self.qs.values_list('id', flat=True)),
-            [self.user.id, self.user.id]
-        )
-
-    def test_len(self):
-        self.assertEqual(len(self.qs), 2)
-
-    def test_iterator(self):
-        self.assertEqual(list(self.qs.iterator()), [self.user] * 2)
