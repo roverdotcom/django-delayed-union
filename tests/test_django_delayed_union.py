@@ -1,9 +1,7 @@
 import abc
 
-import pytest
 from django.contrib.auth.models import Permission
 from django.contrib.auth.models import User
-from django.db import DatabaseError
 from django.db.models import F
 from django.db.models import Q
 from django.db.models import QuerySet
@@ -244,20 +242,6 @@ class DelayedUnionQuerySetTestsMixin(object):
         user = self.qs.annotate(doubled=2 * F('id')).first()
         self.assertEqual(user.doubled, 2 * self.user.id)
 
-    @pytest.mark.xfail(strict=True, raises=DatabaseError)
-    def test_dates(self):
-        self.assertEqual(
-            self.qs.dates('date_joined', 'day').first(),
-            self.user.date_joined.date()
-        )
-
-    @pytest.mark.xfail(strict=True, raises=DatabaseError)
-    def test_datetimes(self):
-        self.assertEqual(
-            self.qs.datetimes('date_joined', 'second').first(),
-            self.user.date_joined
-        )
-
     def test_only(self):
         user = self.qs.only('id').first()
         with self.assertNumQueries(0):
@@ -409,10 +393,16 @@ class DelayedUnionAllQuerySetTests(DelayedUnionQuerySetTestsMixin, TestCase):
         )
 
     def test_values(self):
-        self.assertEqual(list(self.qs.values('id')), [{'id': 1}, {'id': 1}])
+        self.assertEqual(
+            list(self.qs.values('id')),
+            [{'id': self.user.id}, {'id': self.user.id}]
+        )
 
     def test_values_list(self):
-        self.assertEqual(list(self.qs.values_list('id', flat=True)), [1, 1])
+        self.assertEqual(
+            list(self.qs.values_list('id', flat=True)),
+            [self.user.id, self.user.id]
+        )
 
     def test_len(self):
         self.assertEqual(len(self.qs), 2)
