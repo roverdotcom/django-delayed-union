@@ -15,10 +15,16 @@ matrix:
         - TOXENV=2.7-1.11-cover-mysql,report,coveralls,codecov
     - python: '2.7'
       env:
+        - TOXENV=2.7-1.11-cover-postgresql,report,coveralls,codecov
+    - python: '2.7'
+      env:
         - TOXENV=2.7-1.11-cover-sqlite,report,coveralls,codecov
     - python: '3.5'
       env:
         - TOXENV=3.5-1.11-cover-mysql,report,coveralls,codecov
+    - python: '3.5'
+      env:
+        - TOXENV=3.5-1.11-cover-postgresql,report,coveralls,codecov
     - python: '3.5'
       env:
         - TOXENV=3.5-1.11-cover-sqlite,report,coveralls,codecov
@@ -27,16 +33,25 @@ matrix:
         - TOXENV=3.5-2.0-cover-mysql,report,coveralls,codecov
     - python: '3.5'
       env:
+        - TOXENV=3.5-2.0-cover-postgresql,report,coveralls,codecov
+    - python: '3.5'
+      env:
         - TOXENV=3.5-2.0-cover-sqlite,report,coveralls,codecov
     - python: '3.6'
       env:
         - TOXENV=3.6-1.11-cover-mysql,report,coveralls,codecov
     - python: '3.6'
       env:
+        - TOXENV=3.6-1.11-cover-postgresql,report,coveralls,codecov
+    - python: '3.6'
+      env:
         - TOXENV=3.6-1.11-cover-sqlite,report,coveralls,codecov
     - python: '3.6'
       env:
         - TOXENV=3.6-2.0-cover-mysql,report,coveralls,codecov
+    - python: '3.6'
+      env:
+        - TOXENV=3.6-2.0-cover-postgresql,report,coveralls,codecov
     - python: '3.6'
       env:
         - TOXENV=3.6-2.0-cover-sqlite,report,coveralls,codecov

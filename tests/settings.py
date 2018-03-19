@@ -7,9 +7,9 @@ INSTALLED_APPS = [
 ]
 ROOT_URLCONF = []
 
-test_database = os.environ.get('TEST_DATABASE', 'sqlite')
+TEST_DATABASE = os.environ.get('TEST_DATABASE', 'sqlite')
 
-if test_database == 'mysql':
+if TEST_DATABASE == 'mysql':
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
@@ -18,6 +18,17 @@ if test_database == 'mysql':
             'PASSWORD': '',
             'HOST': '127.0.0.1',
             'PORT': 3306,
+        }
+    }
+if TEST_DATABASE == 'postgresql':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': 'testdb',
+            'USER': 'postgres',
+            'PASSWORD': '',
+            'HOST': '127.0.0.1',
+            'PORT': 5432,
         }
     }
 else:
