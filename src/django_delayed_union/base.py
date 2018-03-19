@@ -248,8 +248,6 @@ class DelayedQuerySet(with_metaclass(DelayedQuerySetBase, object)):
     values = PassthroughMethod()
     values_list = PassthroughMethod()
     annotate = PassthroughMethod()
-    dates = PassthroughMethod()
-    datetimes = PassthroughMethod()
     select_related = PassthroughMethod()
     defer = PassthroughMethod()
     only = PassthroughMethod()
@@ -275,6 +273,11 @@ class DelayedQuerySet(with_metaclass(DelayedQuerySetBase, object)):
     update = NotImplementedMethod()
     get_or_create = NotImplementedMethod()
     update_or_create = NotImplementedMethod()
+
+    # These rely on sorting on an annotated field which is not available
+    # once the union is applied
+    dates = NotImplementedMethod()
+    datetimes = NotImplementedMethod()
 
     def get(self, *args, **kwargs):
         """

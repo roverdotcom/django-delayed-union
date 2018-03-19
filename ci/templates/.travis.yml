@@ -16,6 +16,8 @@ matrix:
         - TOXENV={{ env }}{% if config.cover %},report,coveralls,codecov{% endif -%}
 {% endfor %}
 
+services:
+  - mysql
 before_install:
   - python --version
   - uname -a
