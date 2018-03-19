@@ -253,7 +253,6 @@ class DelayedQuerySet(with_metaclass(DelayedQuerySetBase, object)):
     only = PassthroughMethod()
     extra = PassthroughMethod()
     using = PassthroughMethod()
-    select_for_update = PassthroughMethod()
     complex_filter = PassthroughMethod()
 
     prefetch_related = FirstQuerySetPassthroughMethod()
@@ -271,6 +270,7 @@ class DelayedQuerySet(with_metaclass(DelayedQuerySetBase, object)):
     intersection = NotImplementedMethod()
     difference = NotImplementedMethod()
     update = NotImplementedMethod()
+    select_for_update = NotImplementedMethod()
     get_or_create = NotImplementedMethod()
     update_or_create = NotImplementedMethod()
 

@@ -287,9 +287,6 @@ class DelayedUnionQuerySetTestsMixin(object):
         self.qs.bulk_create([User(id=4242)])
         self.assertTrue(User.objects.filter(id=4242).exists())
 
-    def test_select_for_update(self):
-        self.assertIsNotNone(self.qs.select_for_update().first())
-
     def test_update(self):
         self.qs.update(first_name='Rover')
         for user in self.qs:
