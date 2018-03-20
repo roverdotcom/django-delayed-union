@@ -11,7 +11,7 @@ Overview
       - |docs|
     * - tests
       - | |travis|
-        | |coveralls| |codecov|
+        | |codecov|
     * - package
       - | |version| |wheel| |supported-versions| |supported-implementations|
         | |commits-since|
@@ -23,10 +23,6 @@ Overview
 .. |travis| image:: https://travis-ci.org/roverdotcom/django-delayed-union.svg?branch=master
     :alt: Travis-CI Build Status
     :target: https://travis-ci.org/roverdotcom/django-delayed-union
-
-.. |coveralls| image:: https://coveralls.io/repos/roverdotcom/django-delayed-union/badge.svg?branch=master&service=github
-    :alt: Coverage Status
-    :target: https://coveralls.io/r/roverdotcom/django-delayed-union
 
 .. |codecov| image:: https://codecov.io/github/roverdotcom/django-delayed-union/coverage.svg?branch=master
     :alt: Coverage Status
