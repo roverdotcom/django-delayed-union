@@ -1,12 +1,15 @@
 import abc
+import inspect
 from builtins import object
 from functools import partial
 
 from django.db.models import QuerySet
 from future.utils import with_metaclass
 
+from .utils import get_formatted_function_signature
 
-class DelayedQuerySetDescriptor(object):
+
+class DelayedQuerySetDescriptor(with_metaclass(abc.ABCMeta, object)):
     """
     A base class for the descriptors which are used for
     :class:`DelayedQuerySet`.
@@ -15,7 +18,7 @@ class DelayedQuerySetDescriptor(object):
     their names upon class creation.
     """
     def __init__(self, name=None):
-        self.name = name
+        self.set_name(name)
 
     def set_name(self, name):
         """
@@ -24,6 +27,37 @@ class DelayedQuerySetDescriptor(object):
         :param str name: the name of the descriptor
         """
         self.name = name
+        if name is not None:
+            self.__doc__ = self.get_docstring()
+
+    @abc.abstractmethod
+    def get_base_docstring(self):
+        """
+        Returns a string which will be prepended to the docstring for
+        the corresponding method on :class:`django.db.models.QuerySet`.
+        """
+
+    def get_docstring(self):
+        """
+        Returns a docstring for this descriptor based on the corresponding
+        docstring for :class:`django.db.models.QuerySet`.
+        """
+        docstring = self.get_base_docstring().strip()
+
+        queryset_attr = getattr(QuerySet, self.name, None)
+        queryset_doc = getattr(queryset_attr, '__doc__', '')
+        if queryset_doc:
+            if docstring:
+                docstring += '  Documentation for *{name}*:\n'
+            docstring += queryset_doc
+
+        if inspect.ismethod(queryset_attr):
+            docstring = '{}{}\n{}'.format(
+                self.name,
+                get_formatted_function_signature(queryset_attr),
+                docstring
+            )
+        return docstring.strip().format(name=self.name)
 
 
 class DelayedQuerySetMethod(DelayedQuerySetDescriptor):
@@ -51,6 +85,12 @@ class PostApplyMethod(DelayedQuerySetMethod):
     def __call__(self, obj, *args, **kwargs):
         return getattr(obj._apply(), self.name)(*args, **kwargs)
 
+    def get_base_docstring(self):
+        return """
+        Returns the output of ``{name}(...)`` after having applied the delayed
+        operation.
+        """
+
 
 class PostApplyProperty(DelayedQuerySetDescriptor):
     """
@@ -68,6 +108,9 @@ class PostApplyProperty(DelayedQuerySetDescriptor):
             return self
         return getattr(obj._apply(), self.name)
 
+    def get_base_docstring(self):
+        return ""
+
 
 class PassthroughMethod(DelayedQuerySetMethod):
     """
@@ -84,6 +127,12 @@ class PassthroughMethod(DelayedQuerySetMethod):
         return obj._clone([
             getattr(qs, self.name)(*args, **kwargs) for qs in obj._querysets
         ])
+
+    def get_base_docstring(self):
+        return """
+        Returns the a new delayed queryset with ``{name}(...)`` having been called
+        on each of the component querysets.:
+        """
 
 
 class FirstQuerySetPassthroughMethod(DelayedQuerySetMethod):
@@ -103,6 +152,12 @@ class FirstQuerySetPassthroughMethod(DelayedQuerySetMethod):
         ) + obj._querysets[1:]
         return obj._clone(querysets)
 
+    def get_base_docstring(self):
+        return """
+        Returns the a new delayed queryset with ``{name}(...)`` having been
+        called on the first component queryset, while the rest remain unchanged.
+        """
+
 
 class FirstQuerySetMethod(DelayedQuerySetMethod):
     """
@@ -112,6 +167,12 @@ class FirstQuerySetMethod(DelayedQuerySetMethod):
     def __call__(self, obj, *args, **kwargs):
         return getattr(obj._querysets[0], self.name)(*args, **kwargs)
 
+    def get_base_docstring(self):
+        return """
+        Returns the result of calling ``{name}(...)`` on the first component
+        queryset.
+        """
+
 
 class NotImplementedMethod(DelayedQuerySetMethod):
     """
@@ -119,6 +180,11 @@ class NotImplementedMethod(DelayedQuerySetMethod):
     """
     def __call__(self, obj, *args, **kwargs):
         raise NotImplementedError()
+
+    def get_base_docstring(self):
+        return """
+        Raises :class:`NotImplementedError`.
+        """
 
 
 class DelayedQuerySetBase(abc.ABCMeta):
@@ -137,10 +203,11 @@ class DelayedQuerySetBase(abc.ABCMeta):
 class DelayedQuerySet(with_metaclass(DelayedQuerySetBase, object)):
     """
     A class used to work around some of the issues with Django's built-in
-    support for ``UNION`` within querysets.  The primary issue is that after
-    a ``.union()`` call is made any subsequent filtering will silently fail.
-    This works around that issue by maintaing all of the individual querysets
-    and not applying an operation like ``.union()`` until it's needed.
+    support for set operations with querysets (such as ``UNION``).
+    The primary issue is that after ```.union()`` call is made any subsequent
+    filtering will silently fail. This class works around that issue by
+    maintaing all of the individual querysets and not applying an operation
+    like ``.union()`` until it's needed.
 
     For example, suppose we have ``qs = DelayedUnionQuerySet(qs0, qs1)```,
     then running ``qs = qs.filter(id=42)`` will be equivalent to doing
@@ -150,7 +217,7 @@ class DelayedQuerySet(with_metaclass(DelayedQuerySetBase, object)):
     the scenes.
 
     Subclasses need to implement the :meth:`_apply_operation`, which performs
-    the operation like ``.union()`` that is being delayed.
+    the operation such as ``.union()`` that is being delayed.
     """
     def __init__(self, *querysets, **kwargs):
         """
@@ -161,7 +228,8 @@ class DelayedQuerySet(with_metaclass(DelayedQuerySetBase, object)):
         if not all(isinstance(qs, QuerySet) for qs in querysets):
             # I think this should be able to work with DelayedQuerySets
             # as well, but the _apply method would need to call _apply
-            # on any DelayedQuerySet in self._querysets
+            # on any DelayedQuerySet in self._querysets.  Additionally,
+            # only certain database engines support nested set operations.
             raise ValueError('can only pass in QuerySets for now')
         self._querysets = tuple(qs.order_by() for qs in querysets)
         self._kwargs = kwargs
@@ -287,7 +355,7 @@ class DelayedQuerySet(with_metaclass(DelayedQuerySetBase, object)):
         .. note::
 
            We cannot use :class:`PostApplyMethod` for this since that does
-           additional filtering which does not work with quersets that have
+           additional filtering which does not work with querysets that have
            been "unioned" for example.
         """
         clone = self.filter(*args, **kwargs)
