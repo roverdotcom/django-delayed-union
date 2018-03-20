@@ -7,6 +7,8 @@ from django.db.models import Q
 from django.db.models import QuerySet
 from future.utils import with_metaclass
 
+from django_delayed_union.base import DelayedQuerySetDescriptor
+
 from .factories import UserFactory
 
 
@@ -40,6 +42,14 @@ class DelayedQuerySetMetaTestsMixin(with_metaclass(abc.ABCMeta, object)):
                 User.objects.all(),
                 cls(User.objects.all(), User.objects.all())
             )
+
+    def test_all_descriptors_have_docstrings(self):
+        cls = self.get_class()
+        for attr in dir(cls):
+            descriptor = getattr(cls, attr)
+            if not isinstance(descriptor, DelayedQuerySetDescriptor):
+                continue
+            self.assertIsNotNone(descriptor.__doc__)
 
 
 class DelayedQuerySetTestsMixin(with_metaclass(abc.ABCMeta, object)):

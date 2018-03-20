@@ -17,8 +17,8 @@ When `reporting a bug <https://github.com/roverdotcom/django-delayed-union/issue
 Documentation improvements
 ==========================
 
-Django Delayed Union could always use more documentation, whether as part of the
-official Django Delayed Union docs, in docstrings, or even on the web in blog posts,
+We could always use more documentation, whether as part of the
+official docs, in docstrings, or even on the web in blog posts,
 articles, and such.
 
 Feature requests and feedback
@@ -30,7 +30,7 @@ If you are proposing a feature:
 
 * Explain in detail how it would work.
 * Keep the scope as narrow as possible, to make it easier to implement.
-* Remember that this is a volunteer-driven project, and that code contributions are welcome :)
+* Code contributions are always welcome :)
 
 Development
 ===========

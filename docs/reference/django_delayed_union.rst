@@ -1,9 +1,22 @@
 django_delayed_union
 ====================
 
-.. testsetup::
+.. module:: django_delayed_union.base
 
-    from django_delayed_union import *
+.. autoclass:: DelayedQuerySet
+   :members:
+   :undoc-members:
 
-.. automodule:: django_delayed_union
-    :members:
+.. module:: django_delayed_union
+
+.. autoclass:: DelayedUnionQuerySet
+   :members:
+   :show-inheritance:
+
+.. autoclass:: DelayedIntersectionQuerySet
+   :members:
+   :show-inheritance:
+
+.. autoclass:: DelayedDifferenceQuerySet
+   :members:
+   :show-inheritance:
