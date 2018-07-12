@@ -308,6 +308,9 @@ class DelayedQuerySet(with_metaclass(DelayedQuerySetBase, object)):
 
     _result_cache = PostApplyProperty()
 
+    _add_hints = PostApplyProperty()
+    _hints = PostApplyProperty()
+
     iterator = PostApplyMethod()
     count = PostApplyMethod()
     earliest = PostApplyMethod()

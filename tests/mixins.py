@@ -285,3 +285,8 @@ class DelayedQuerySetTestsMixin(with_metaclass(abc.ABCMeta, object)):
         self.qs._result_cache = list(self.qs)
         with self.assertNumQueries(0):
             self.qs.count()
+
+    def test_add_hints(self):
+        instance = self.qs.first()
+        self.qs._add_hints(instance=instance)
+        self.assertEqual(self.qs._hints, {'instance': instance})
