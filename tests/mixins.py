@@ -277,3 +277,16 @@ class DelayedQuerySetTestsMixin(with_metaclass(abc.ABCMeta, object)):
     def test_get_or_create(self):
         with self.assertRaises(NotImplementedError):
             self.qs.get_or_create(id=4242)
+
+    def test_apply_is_cached(self):
+        self.assertIs(self.qs._apply(), self.qs._apply())
+
+    def test_can_set_result_cache(self):
+        self.qs._result_cache = list(self.qs)
+        with self.assertNumQueries(0):
+            self.qs.count()
+
+    def test_add_hints(self):
+        instance = self.qs.first()
+        self.qs._add_hints(instance=instance)
+        self.assertEqual(self.qs._hints, {'instance': instance})

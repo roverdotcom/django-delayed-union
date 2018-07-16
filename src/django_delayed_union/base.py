@@ -108,6 +108,9 @@ class PostApplyProperty(DelayedQuerySetDescriptor):
             return self
         return getattr(obj._apply(), self.name)
 
+    def __set__(self, obj, value):
+        return setattr(obj._apply(), self.name, value)
+
     def get_base_docstring(self):
         return ""
 
@@ -235,6 +238,7 @@ class DelayedQuerySet(with_metaclass(DelayedQuerySetBase, object)):
         self._kwargs = kwargs
         self._standard_ordering = True
         self._order_by = ()
+        self._applied = None  # a cache for the queryset after the operation has been applied
 
     def _apply(self):
         """
@@ -244,9 +248,14 @@ class DelayedQuerySet(with_metaclass(DelayedQuerySetBase, object)):
 
         :rtype: :class:`django.db.models.QuerySet`
         """
+        if self._applied is not None:
+            return self._applied
+
         qs = self._apply_operation().order_by(*self._order_by)
         qs.query.standard_ordering = self._standard_ordering
-        return qs
+
+        self._applied = qs
+        return self._applied
 
     @abc.abstractmethod
     def _apply_operation(self):
@@ -296,6 +305,11 @@ class DelayedQuerySet(with_metaclass(DelayedQuerySetBase, object)):
     __setstate__ = NotImplementedMethod()
     __and__ = NotImplementedMethod()
     __or__ = NotImplementedMethod()
+
+    _result_cache = PostApplyProperty()
+
+    _add_hints = PostApplyProperty()
+    _hints = PostApplyProperty()
 
     iterator = PostApplyMethod()
     count = PostApplyMethod()
