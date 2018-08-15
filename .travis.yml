@@ -1,6 +1,8 @@
+dist: xenial
 language: python
-sudo: false
+sudo: true
 cache: pip
+
 env:
   global:
     - LD_PRELOAD=/lib/x86_64-linux-gnu/libSegFault.so
@@ -37,6 +39,15 @@ matrix:
     - python: '3.5'
       env:
         - TOXENV=3.5-2.0-cover-sqlite,report,codecov
+    - python: '3.5'
+      env:
+        - TOXENV=3.5-2.1-cover-mysql,report,codecov
+    - python: '3.5'
+      env:
+        - TOXENV=3.5-2.1-cover-postgresql,report,codecov
+    - python: '3.5'
+      env:
+        - TOXENV=3.5-2.1-cover-sqlite,report,codecov
     - python: '3.6'
       env:
         - TOXENV=3.6-1.11-cover-mysql,report,codecov
@@ -55,6 +66,42 @@ matrix:
     - python: '3.6'
       env:
         - TOXENV=3.6-2.0-cover-sqlite,report,codecov
+    - python: '3.6'
+      env:
+        - TOXENV=3.6-2.1-cover-mysql,report,codecov
+    - python: '3.6'
+      env:
+        - TOXENV=3.6-2.1-cover-postgresql,report,codecov
+    - python: '3.6'
+      env:
+        - TOXENV=3.6-2.1-cover-sqlite,report,codecov
+    - python: '3.7'
+      env:
+        - TOXENV=3.7-1.11-cover-mysql,report,codecov
+    - python: '3.7'
+      env:
+        - TOXENV=3.7-1.11-cover-postgresql,report,codecov
+    - python: '3.7'
+      env:
+        - TOXENV=3.7-1.11-cover-sqlite,report,codecov
+    - python: '3.7'
+      env:
+        - TOXENV=3.7-2.0-cover-mysql,report,codecov
+    - python: '3.7'
+      env:
+        - TOXENV=3.7-2.0-cover-postgresql,report,codecov
+    - python: '3.7'
+      env:
+        - TOXENV=3.7-2.0-cover-sqlite,report,codecov
+    - python: '3.7'
+      env:
+        - TOXENV=3.7-2.1-cover-mysql,report,codecov
+    - python: '3.7'
+      env:
+        - TOXENV=3.7-2.1-cover-postgresql,report,codecov
+    - python: '3.7'
+      env:
+        - TOXENV=3.7-2.1-cover-sqlite,report,codecov
 services:
   - mysql
 before_install:
