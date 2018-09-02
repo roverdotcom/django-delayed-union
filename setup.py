@@ -62,7 +62,7 @@ setup(
     ],
     install_requires=[
         'future',
-        'django>=1.11',
+        'django>=1.11.4',
     ],
     tests_require=[
         'factory_boy'
