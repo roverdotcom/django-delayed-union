@@ -45,6 +45,9 @@ class DelayedUnionQuerySetTests(DelayedUnionQuerySetTestsMixin, TestCase):
             User.objects.all(),
         )
 
+    def get_expected_models(self):
+        return [self.user]
+
 
 class DelayedUnionQuerySetMixedTests(
         DelayedUnionQuerySetTestsMixin,
@@ -56,6 +59,9 @@ class DelayedUnionQuerySetMixedTests(
             User.objects.all(),
         )
 
+    def get_expected_models(self):
+        return [self.user]
+
 
 class DelayedUnionQuerySetReversedMixedTests(
         DelayedUnionQuerySetTestsMixin,
@@ -66,6 +72,9 @@ class DelayedUnionQuerySetReversedMixedTests(
             User.objects.all(),
             User.objects.filter(id=self.bad_id),
         )
+
+    def get_expected_models(self):
+        return [self.user]
 
 
 class DelayedUnionAllMutuallyExclusiveQuerySetTests(
@@ -79,67 +88,26 @@ class DelayedUnionAllMutuallyExclusiveQuerySetTests(
             all=True
         )
 
+    def get_expected_models(self):
+        return [self.user]
+
 
 class DelayedUnionAllQuerySetTests(DelayedUnionQuerySetTestsMixin, TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        super(DelayedUnionQuerySetTestsMixin, cls).setUpTestData()
+        cls.user_b = UserFactory.create()
 
     def get_queryset(self):
         return DelayedUnionQuerySet(
             User.objects.all(),
-            User.objects.all(),
+            User.objects.filter(id=self.user_b.id),
             all=True
         )
 
-    def test_get(self):
+    def get_expected_models(self):
+        return [self.user, self.user_b, self.user_b]
+
+    def test_get_with_duplicates(self):
         with self.assertRaises(User.MultipleObjectsReturned):
-            self.qs.get(id=self.user.id)
-
-    def test_repr(self):
-        self.assertEqual(
-            repr(self.qs),
-            '<QuerySet {}>'.format([self.user, self.user])
-        )
-
-    def test_count(self):
-        self.assertEqual(self.qs.count(), 2)
-
-    def test_iter(self):
-        self.assertEqual(list(self.qs), [self.user, self.user])
-
-    def test_order_by(self):
-        second_user = UserFactory.create()
-        self.assertEqual(
-            list(self.qs.order_by('pk')),
-            [self.user] * 2 + [second_user] * 2
-        )
-
-    def test_order_by_reversed(self):
-        second_user = UserFactory.create()
-        self.assertEqual(
-            list(self.qs.order_by('-pk')),
-            [second_user] * 2 + [self.user] * 2
-        )
-
-    def test_reverse(self):
-        second_user = UserFactory.create()
-        self.assertEqual(
-            list(self.qs.order_by('pk').reverse()),
-            [second_user] * 2 + [self.user] * 2
-        )
-
-    def test_values(self):
-        self.assertEqual(
-            list(self.qs.values('id')),
-            [{'id': self.user.id}, {'id': self.user.id}]
-        )
-
-    def test_values_list(self):
-        self.assertEqual(
-            list(self.qs.values_list('id', flat=True)),
-            [self.user.id, self.user.id]
-        )
-
-    def test_len(self):
-        self.assertEqual(len(self.qs), 2)
-
-    def test_iterator(self):
-        self.assertEqual(list(self.qs.iterator()), [self.user] * 2)
+            self.qs.get(id=self.user_b.id)

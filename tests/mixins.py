@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.db.models import F
 from django.db.models import Q
 from django.db.models import QuerySet
+from django.utils.functional import cached_property
 from future.utils import with_metaclass
 
 from django_delayed_union.base import DelayedQuerySetDescriptor
@@ -61,7 +62,6 @@ class DelayedQuerySetTestsMixin(with_metaclass(abc.ABCMeta, object)):
 
     def setUp(self):
         super(DelayedQuerySetTestsMixin, self).setUp()
-        self.regular_qs = User.objects.filter(id=self.user.id)
         self.qs = self.get_queryset()
 
     @abc.abstractmethod
@@ -69,6 +69,43 @@ class DelayedQuerySetTestsMixin(with_metaclass(abc.ABCMeta, object)):
         """
         Subclasses should implement a test that select_related works.
         """
+
+    @abc.abstractmethod
+    def get_expected_models(self):
+        """
+        Subclasses should return a list of the expected models in the queryset.
+        This should contain :attr:`user` and should not contain model with
+        the id :attr:`bad_id`.
+        """
+
+    @cached_property
+    def expected_models(self):
+        return self.get_expected_models()
+
+    @cached_property
+    def expected_models_sorted_by_id(self):
+        return sorted(self.expected_models, key=lambda u: u.id)
+
+    @cached_property
+    def expected_ids(self):
+        return {user.id for user in self.expected_models}
+
+    @cached_property
+    def maximum_expected_id(self):
+        return max(self.expected_ids)
+
+    @cached_property
+    def expected_count(self):
+        return len(self.expected_models)
+
+    def test_user_is_first_created_user(self):
+        self.assertEqual(self.expected_models_sorted_by_id[0], self.user)
+
+    def test_user_is_in_expected_models(self):
+        self.assertIn(self.user, self.expected_models)
+
+    def test_bad_id_not_in_expected_ids(self):
+        self.assertNotIn(self.bad_id, self.expected_ids)
 
     def test_get(self):
         self.assertEqual(self.qs.get(id=self.user.id), self.user)
@@ -78,16 +115,20 @@ class DelayedQuerySetTestsMixin(with_metaclass(abc.ABCMeta, object)):
             self.qs.get(id=self.bad_id)
 
     def test_get_multiple_objects_returned(self):
-        UserFactory.create()
+        new_user = UserFactory.create()
+        self.assertGreater(new_user.id, self.maximum_expected_id)
         with self.assertRaises(User.MultipleObjectsReturned):
-            self.qs.get(id__gt=-1)
+            self.qs.get(id__gte=self.maximum_expected_id)
 
     def test_get_filtered_with_bad_id(self):
         with self.assertRaises(User.DoesNotExist):
             self.qs.filter(id=self.bad_id).get(id=self.user.id)
 
     def test_repr(self):
-        self.assertEqual(repr(self.qs), repr(self.regular_qs))
+        self.assertEqual(
+            repr(self.qs.order_by('id')),
+            '<QuerySet {}>'.format(self.expected_models_sorted_by_id)
+        )
 
     def test_contains_true(self):
         self.assertIn(self.user, self.qs)
@@ -102,19 +143,32 @@ class DelayedQuerySetTestsMixin(with_metaclass(abc.ABCMeta, object)):
         self.assertFalse(self.qs.filter(id=self.bad_id))
 
     def test_getitem(self):
-        self.assertEqual(self.qs[0], self.user)
+        self.assertEqual(
+            self.qs.order_by('id')[0],
+            self.expected_models_sorted_by_id[0]
+        )
 
     def test_count(self):
-        self.assertEqual(self.qs.count(), 1)
+        self.assertEqual(self.qs.count(), self.expected_count)
 
     def test_iter(self):
-        self.assertEqual(list(self.qs), [self.user])
+        self.assertEqual(
+            sorted(self.qs, key=lambda u: u.id),
+            self.expected_models_sorted_by_id
+        )
 
     def test_filter(self):
         self.assertEqual(self.qs.filter(id=self.bad_id).count(), 0)
 
     def test_exclude(self):
-        self.assertEqual(self.qs.exclude(id=self.user.id).count(), 0)
+        user_to_exclude = self.user
+        excluded_count = sum(
+            1 for u in self.expected_models if u == user_to_exclude
+        )
+        self.assertEqual(
+            self.qs.exclude(id=user_to_exclude.id).count(),
+            self.expected_count - excluded_count
+        )
 
     def test_filtering_after_ordering(self):
         second = UserFactory.create()
@@ -123,14 +177,14 @@ class DelayedQuerySetTestsMixin(with_metaclass(abc.ABCMeta, object)):
 
     def test_values(self):
         self.assertEqual(
-            list(self.qs.values('id')),
-            [{'id': self.user.id}]
+            set(tuple(values.items()) for values in self.qs.values('id')),
+            {(('id', u.id),) for u in self.expected_models}
         )
 
     def test_values_list(self):
         self.assertEqual(
-            list(self.qs.values_list('id', flat=True)),
-            [self.user.id]
+            set(self.qs.values_list('id', flat=True)),
+            self.expected_ids
         )
 
     def test_prefetch_related(self):
@@ -150,14 +204,14 @@ class DelayedQuerySetTestsMixin(with_metaclass(abc.ABCMeta, object)):
         second = UserFactory.create()
         self.assertEqual(
             list(self.qs.order_by('id')),
-            [self.user, second]
+            self.expected_models_sorted_by_id + [second]
         )
 
     def test_order_by_reversed(self):
         second = UserFactory.create()
         self.assertEqual(
             list(self.qs.order_by('-id')),
-            [second, self.user]
+            [second] + self.expected_models_sorted_by_id[::-1]
         )
 
     def test_ordered_false(self):
@@ -170,11 +224,11 @@ class DelayedQuerySetTestsMixin(with_metaclass(abc.ABCMeta, object)):
         second = UserFactory.create()
         self.assertEqual(
             list(self.qs.order_by('-id').reverse()),
-            [self.user, second]
+            self.expected_models_sorted_by_id + [second]
         )
 
     def test_len(self):
-        self.assertEqual(len(self.qs), 1)
+        self.assertEqual(len(self.qs), self.expected_count)
 
     def test_nonzero_true(self):
         self.assertTrue(self.qs)
@@ -183,7 +237,10 @@ class DelayedQuerySetTestsMixin(with_metaclass(abc.ABCMeta, object)):
         self.assertFalse(self.qs.filter(id=self.bad_id))
 
     def test_iterator(self):
-        self.assertEqual(list(self.qs.iterator()), [self.user])
+        self.assertEqual(
+            sorted(self.qs.iterator(), key=lambda u: u.id),
+            self.expected_models_sorted_by_id
+        )
 
     def test_earliest(self):
         UserFactory.create()
@@ -240,7 +297,10 @@ class DelayedQuerySetTestsMixin(with_metaclass(abc.ABCMeta, object)):
             self.assertEqual(user.date_joined, self.user.date_joined)
 
     def test_in_bulk(self):
-        self.assertEqual(self.qs.in_bulk(), {self.user.id: self.user})
+        self.assertEqual(
+            self.qs.in_bulk(),
+            {u.id: u for u in self.expected_models}
+        )
 
     def test_in_bulk_empty(self):
         self.assertEqual(self.qs.in_bulk([]), {})
@@ -252,7 +312,10 @@ class DelayedQuerySetTestsMixin(with_metaclass(abc.ABCMeta, object)):
         )
 
     def test_distinct(self):
-        self.assertEqual(list(self.qs.distinct()), [self.user])
+        self.assertEqual(
+            sorted(self.qs.distinct(), key=lambda u: u.id),
+            sorted(set(self.expected_models), key=lambda u: u.id),
+        )
 
     def test_extra(self):
         user = self.qs.extra({'n': 'SELECT 42'}).first()
