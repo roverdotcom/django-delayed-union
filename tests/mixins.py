@@ -36,13 +36,10 @@ class DelayedQuerySetMetaTestsMixin(with_metaclass(abc.ABCMeta, object)):
             ).format(cls, ', '.join(sorted(missing)))
         )
 
-    def test_currently_does_not_support_nested_delayed_querysets(self):
+    def test_does_not_accept_non_querysets(self):
         cls = self.get_class()
         with self.assertRaises(ValueError):
-            cls(
-                User.objects.all(),
-                cls(User.objects.all(), User.objects.all())
-            )
+            cls(User.objects.all(), [1, 2, 3])
 
     def test_all_descriptors_have_docstrings(self):
         cls = self.get_class()
