@@ -3,7 +3,7 @@ from .base import DelayedQuerySet
 
 class DelayedIntersectionQuerySet(DelayedQuerySet):
     def __init__(self, *querysets):
-        # Handle the case when a DelayedUnionQuerySet is passed in
+        # Handle the case when a DelayedIntersectionQuerySet is passed in
         expanded_querysets = []
         for queryset in querysets:
             if isinstance(queryset, DelayedIntersectionQuerySet):
