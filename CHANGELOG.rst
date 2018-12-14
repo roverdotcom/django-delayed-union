@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.1.2 (2018-12-14)
+------------------
+* Added support for nested unions and intersections
+
 0.1.1 (2018-07-16)
 ------------------
 
