@@ -36,6 +36,9 @@ class DelayedDifferenceQuerySetTests(
             User.objects.filter(id=self.excluded_user.id)
         )
 
+    def get_expected_models(self):
+        return [self.user]
+
     def test_select_related(self):
         base_qs = Permission.objects.all()
         qs = DelayedDifferenceQuerySet(base_qs, base_qs.none())

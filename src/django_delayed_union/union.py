@@ -11,7 +11,21 @@ class DelayedUnionQuerySet(DelayedQuerySet):
                     unexpected_kwarg
                 )
             )
-        return super(DelayedUnionQuerySet, self).__init__(*querysets, **kwargs)
+
+        # Handle the case when a DelayedUnionQuerySet is passed in
+        expanded_querysets = []
+        for queryset in querysets:
+            if isinstance(queryset, DelayedUnionQuerySet):
+                if queryset._kwargs.get('all', False) != kwargs.get('all', False):
+                    raise ValueError('incompatible kwargs')
+                expanded_querysets.extend(queryset._querysets)
+            else:
+                expanded_querysets.append(queryset)
+
+        return super(DelayedUnionQuerySet, self).__init__(
+            *expanded_querysets,
+            **kwargs
+        )
 
     def _apply_operation(self):
         """

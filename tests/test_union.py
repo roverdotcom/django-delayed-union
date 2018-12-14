@@ -2,6 +2,8 @@ from django.contrib.auth.models import Permission
 from django.contrib.auth.models import User
 from django.test import TestCase
 
+from django_delayed_union import DelayedDifferenceQuerySet
+from django_delayed_union import DelayedIntersectionQuerySet
 from django_delayed_union import DelayedUnionQuerySet
 
 from .factories import UserFactory
@@ -19,6 +21,37 @@ class DelayedUnionQuerySetMetaTests(DelayedQuerySetMetaTestsMixin, TestCase):
                 User.objects.all(),
                 User.objects.all(),
                 foo=42
+            )
+
+    def test_does_not_support_nested_delayed_querysets_with_incompatible_kwargs(self):
+        with self.assertRaises(ValueError):
+            DelayedUnionQuerySet(
+                User.objects.all(),
+                DelayedUnionQuerySet(
+                    User.objects.all(),
+                    User.objects.all(),
+                    all=True
+                )
+            )
+
+    def test_does_not_support_delayed_intersections_as_querysets(self):
+        with self.assertRaises(ValueError):
+            DelayedUnionQuerySet(
+                User.objects.all(),
+                DelayedIntersectionQuerySet(
+                    User.objects.all(),
+                    User.objects.all(),
+                )
+            )
+
+    def test_does_not_support_delayed_differences_as_querysets(self):
+        with self.assertRaises(ValueError):
+            DelayedUnionQuerySet(
+                User.objects.all(),
+                DelayedDifferenceQuerySet(
+                    User.objects.all(),
+                    User.objects.all(),
+                )
             )
 
 
@@ -45,6 +78,9 @@ class DelayedUnionQuerySetTests(DelayedUnionQuerySetTestsMixin, TestCase):
             User.objects.all(),
         )
 
+    def get_expected_models(self):
+        return [self.user]
+
 
 class DelayedUnionQuerySetMixedTests(
         DelayedUnionQuerySetTestsMixin,
@@ -56,6 +92,9 @@ class DelayedUnionQuerySetMixedTests(
             User.objects.all(),
         )
 
+    def get_expected_models(self):
+        return [self.user]
+
 
 class DelayedUnionQuerySetReversedMixedTests(
         DelayedUnionQuerySetTestsMixin,
@@ -66,6 +105,9 @@ class DelayedUnionQuerySetReversedMixedTests(
             User.objects.all(),
             User.objects.filter(id=self.bad_id),
         )
+
+    def get_expected_models(self):
+        return [self.user]
 
 
 class DelayedUnionAllMutuallyExclusiveQuerySetTests(
@@ -79,67 +121,48 @@ class DelayedUnionAllMutuallyExclusiveQuerySetTests(
             all=True
         )
 
+    def get_expected_models(self):
+        return [self.user]
+
+
+class NestedDelayedUnionQuerySetTests(
+        DelayedUnionQuerySetTestsMixin,
+        TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        super(NestedDelayedUnionQuerySetTests, cls).setUpTestData()
+        cls.user_b, cls.user_c = UserFactory.create_batch(2)
+
+    def get_queryset(self):
+        return DelayedUnionQuerySet(
+            User.objects.exclude(id=self.user.id),
+            DelayedUnionQuerySet(
+                User.objects.exclude(id=self.user_b.id),
+                User.objects.exclude(id=self.user_c.id),
+            )
+        )
+
+    def get_expected_models(self):
+        return [self.user, self.user_b, self.user_c]
+
 
 class DelayedUnionAllQuerySetTests(DelayedUnionQuerySetTestsMixin, TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        super(DelayedUnionQuerySetTestsMixin, cls).setUpTestData()
+        cls.user_b = UserFactory.create()
 
     def get_queryset(self):
         return DelayedUnionQuerySet(
             User.objects.all(),
-            User.objects.all(),
+            User.objects.filter(id=self.user_b.id),
             all=True
         )
 
-    def test_get(self):
+    def get_expected_models(self):
+        return [self.user, self.user_b, self.user_b]
+
+    def test_get_with_duplicates(self):
         with self.assertRaises(User.MultipleObjectsReturned):
-            self.qs.get(id=self.user.id)
-
-    def test_repr(self):
-        self.assertEqual(
-            repr(self.qs),
-            '<QuerySet {}>'.format([self.user, self.user])
-        )
-
-    def test_count(self):
-        self.assertEqual(self.qs.count(), 2)
-
-    def test_iter(self):
-        self.assertEqual(list(self.qs), [self.user, self.user])
-
-    def test_order_by(self):
-        second_user = UserFactory.create()
-        self.assertEqual(
-            list(self.qs.order_by('pk')),
-            [self.user] * 2 + [second_user] * 2
-        )
-
-    def test_order_by_reversed(self):
-        second_user = UserFactory.create()
-        self.assertEqual(
-            list(self.qs.order_by('-pk')),
-            [second_user] * 2 + [self.user] * 2
-        )
-
-    def test_reverse(self):
-        second_user = UserFactory.create()
-        self.assertEqual(
-            list(self.qs.order_by('pk').reverse()),
-            [second_user] * 2 + [self.user] * 2
-        )
-
-    def test_values(self):
-        self.assertEqual(
-            list(self.qs.values('id')),
-            [{'id': self.user.id}, {'id': self.user.id}]
-        )
-
-    def test_values_list(self):
-        self.assertEqual(
-            list(self.qs.values_list('id', flat=True)),
-            [self.user.id, self.user.id]
-        )
-
-    def test_len(self):
-        self.assertEqual(len(self.qs), 2)
-
-    def test_iterator(self):
-        self.assertEqual(list(self.qs.iterator()), [self.user] * 2)
+            self.qs.get(id=self.user_b.id)
