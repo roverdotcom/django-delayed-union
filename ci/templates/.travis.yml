@@ -1,3 +1,4 @@
+dist: xenial
 language: python
 sudo: false
 cache: pip
@@ -18,6 +19,7 @@ matrix:
 
 services:
   - mysql
+  - postgresql
 before_install:
   - python --version
   - uname -a
