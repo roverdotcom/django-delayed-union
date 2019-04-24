@@ -13,7 +13,7 @@ Overview
       - | |travis|
         | |codecov|
     * - package
-      - | |version| |wheel| |supported-versions| |supported-implementations|
+      - | |version| |wheel| |django-versions| |supported-versions|
         | |commits-since|
 
 .. |docs| image:: https://readthedocs.org/projects/django-delayed-union/badge/?style=flat
@@ -44,9 +44,9 @@ Overview
     :alt: Supported versions
     :target: https://pypi.python.org/pypi/django-delayed-union
 
-.. |supported-implementations| image:: https://img.shields.io/pypi/implementation/django-delayed-union.svg
-    :alt: Supported implementations
-    :target: https://pypi.python.org/pypi/django-delayed-union
+.. |django-versions| image:: https://img.shields.io/pypi/djversions/django-delayed-union.svg
+   :alt: Django versions
+   :target: https://pypi.python.org/pypi/django-delayed-union
 
 
 .. end-badges
