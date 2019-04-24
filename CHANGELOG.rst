@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.1.3 (2019-04-24)
+------------------
+* Added tests for Django 2.2
+
 0.1.2 (2018-12-14)
 ------------------
 * Added support for nested unions and intersections
