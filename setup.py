@@ -24,7 +24,7 @@ def read(*names, **kwargs):
 
 setup(
     name='django-delayed-union',
-    version='0.1.2',
+    version='0.1.3',
     license='BSD 3-Clause License',
     description="A library designed to workaround some drawbacks with Django's union, intersection, and difference operations.",
     long_description='%s\n%s' % (
@@ -50,6 +50,8 @@ setup(
         'Framework :: Django',
         'Framework :: Django :: 1.11',
         'Framework :: Django :: 2.0',
+        'Framework :: Django :: 2.1',
+        'Framework :: Django :: 2.2',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',

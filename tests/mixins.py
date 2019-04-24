@@ -187,7 +187,7 @@ class DelayedQuerySetTestsMixin(with_metaclass(abc.ABCMeta, object)):
     def test_prefetch_related(self):
         for user in self.qs.prefetch_related('groups'):
             with self.assertNumQueries(0):
-                self.assertIsNotNone(user.groups.count())
+                self.assertIsNotNone(list(user.groups.all()))
 
     def test_prefetch_related_preserves_ordering(self):
         second = UserFactory.create()
@@ -195,7 +195,7 @@ class DelayedQuerySetTestsMixin(with_metaclass(abc.ABCMeta, object)):
         self.assertEqual(qs.first(), second)
         for user in qs:
             with self.assertNumQueries(0):
-                self.assertIsNotNone(user.groups.count())
+                self.assertIsNotNone(list(user.groups.all()))
 
     def test_order_by(self):
         second = UserFactory.create()

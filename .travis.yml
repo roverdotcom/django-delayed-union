@@ -1,3 +1,4 @@
+dist: xenial
 language: python
 sudo: false
 cache: pip
@@ -46,8 +47,18 @@ matrix:
     - python: '3.6'
       env:
         - TOXENV=3.6-2.1-cover-sqlite,report,codecov
+    - python: '3.6'
+      env:
+        - TOXENV=3.6-2.2-cover-mysql,report,codecov
+    - python: '3.6'
+      env:
+        - TOXENV=3.6-2.2-cover-postgresql,report,codecov
+    - python: '3.6'
+      env:
+        - TOXENV=3.6-2.2-cover-sqlite,report,codecov
 services:
   - mysql
+  - postgresql
 before_install:
   - python --version
   - uname -a
