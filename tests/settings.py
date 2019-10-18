@@ -4,6 +4,7 @@ SECRET_KEY = 'roverdotcom'
 INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.auth',
+    'user_profile',
 ]
 ROOT_URLCONF = []
 

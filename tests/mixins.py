@@ -355,3 +355,7 @@ class DelayedQuerySetTestsMixin(with_metaclass(abc.ABCMeta, object)):
     def test_query(self):
         query = self.qs.query
         self.assertIsInstance(query, sql.Query)
+
+    def test_count_with_select_related(self):
+        qs = self.qs.select_related('user_profile')
+        self.assertEqual(qs.count(), self.expected_count)
