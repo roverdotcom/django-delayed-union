@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.db.models import F
 from django.db.models import Q
 from django.db.models import QuerySet
+from django.db.models import sql
 from django.utils.functional import cached_property
 from future.utils import with_metaclass
 
@@ -350,3 +351,7 @@ class DelayedQuerySetTestsMixin(with_metaclass(abc.ABCMeta, object)):
         instance = self.qs.first()
         self.qs._add_hints(instance=instance)
         self.assertEqual(self.qs._hints, {'instance': instance})
+
+    def test_query(self):
+        query = self.qs.query
+        self.assertIsInstance(query, sql.Query)

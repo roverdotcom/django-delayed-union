@@ -311,6 +311,8 @@ class DelayedQuerySet(with_metaclass(DelayedQuerySetBase, object)):
     _add_hints = PostApplyProperty()
     _hints = PostApplyProperty()
 
+    query = PostApplyProperty()
+
     iterator = PostApplyMethod()
     count = PostApplyMethod()
     earliest = PostApplyMethod()
