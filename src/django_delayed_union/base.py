@@ -190,6 +190,19 @@ class NotImplementedMethod(DelayedQuerySetMethod):
         """
 
 
+class CountPostApplyMethod(PostApplyMethod):
+    def __call__(self, obj, *args, **kwargs):
+        # We make sure there are no select_related calls before calling
+        # count to ensure we don't get an error on MySQL when doing
+        # SELECT COUNT(*) from subquery where there are multiple columns
+        # with the same name in subquery.
+        if obj._result_cache is not None:
+            return len(obj._result_cache)
+
+        obj = obj.select_related(None)
+        return super(CountPostApplyMethod, self).__call__(obj, *args, **kwargs)
+
+
 class DelayedQuerySetBase(abc.ABCMeta):
     """
     This is the metaclass for :`DelayedQuerySet`.  It's purpose is to make
@@ -314,7 +327,7 @@ class DelayedQuerySet(with_metaclass(DelayedQuerySetBase, object)):
     query = PostApplyProperty()
 
     iterator = PostApplyMethod()
-    count = PostApplyMethod()
+    count = CountPostApplyMethod()
     earliest = PostApplyMethod()
     latest = PostApplyMethod()
     first = PostApplyMethod()
