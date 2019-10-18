@@ -56,6 +56,15 @@ matrix:
     - python: '3.6'
       env:
         - TOXENV=3.6-2.2-cover-sqlite,report,codecov
+    - python: '3.6'
+      env:
+        - TOXENV=3.6-3.0-cover-mysql,report,codecov
+    - python: '3.6'
+      env:
+        - TOXENV=3.6-3.0-cover-postgresql,report,codecov
+    - python: '3.6'
+      env:
+        - TOXENV=3.6-3.0-cover-sqlite,report,codecov
 services:
   - mysql
   - postgresql
