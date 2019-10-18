@@ -4,6 +4,7 @@ SECRET_KEY = 'roverdotcom'
 INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.auth',
+    'user_profile',
 ]
 ROOT_URLCONF = []
 
@@ -20,7 +21,7 @@ if TEST_DATABASE == 'mysql':
             'PORT': 3306,
         }
     }
-if TEST_DATABASE == 'postgresql':
+elif TEST_DATABASE == 'postgresql':
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',

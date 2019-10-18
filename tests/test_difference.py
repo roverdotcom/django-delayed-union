@@ -5,6 +5,7 @@ from django.test import TestCase
 from django_delayed_union import DelayedDifferenceQuerySet
 
 from .factories import UserFactory
+from .markers import skip_for_mysql
 from .mixins import DelayedQuerySetMetaTestsMixin
 from .mixins import DelayedQuerySetTestsMixin
 
@@ -21,6 +22,7 @@ class DelayedDifferenceQuerySetTestsMixin(DelayedQuerySetTestsMixin):
     pass
 
 
+@skip_for_mysql
 class DelayedDifferenceQuerySetTests(
         DelayedDifferenceQuerySetTestsMixin,
         TestCase):
