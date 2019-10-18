@@ -20,7 +20,7 @@ if TEST_DATABASE == 'mysql':
             'PORT': 3306,
         }
     }
-if TEST_DATABASE == 'postgresql':
+elif TEST_DATABASE == 'postgresql':
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',

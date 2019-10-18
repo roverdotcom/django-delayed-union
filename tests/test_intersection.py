@@ -5,6 +5,7 @@ from django.test import TestCase
 from django_delayed_union import DelayedIntersectionQuerySet
 
 from .factories import UserFactory
+from .markers import skip_for_mysql
 from .mixins import DelayedQuerySetMetaTestsMixin
 from .mixins import DelayedQuerySetTestsMixin
 
@@ -17,6 +18,7 @@ class DelayedIntersectionQuerySetMetaTests(
         return DelayedIntersectionQuerySet
 
 
+@skip_for_mysql
 class DelayedIntersectionQuerySetTestsMixin(DelayedQuerySetTestsMixin):
     def test_select_related(self):
         base_qs = Permission.objects.all()
@@ -28,6 +30,7 @@ class DelayedIntersectionQuerySetTestsMixin(DelayedQuerySetTestsMixin):
                 self.assertIsNotNone(permission.content_type.id)
 
 
+@skip_for_mysql
 class DelayedIntersectionQuerySetTests(
         DelayedIntersectionQuerySetTestsMixin,
         TestCase):
@@ -47,6 +50,7 @@ class DelayedIntersectionQuerySetTests(
         return [self.user]
 
 
+@skip_for_mysql
 class NestedDelayedIntersectionQuerySetTests(
         DelayedIntersectionQuerySetTestsMixin,
         TestCase):
