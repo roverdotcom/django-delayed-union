@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.1.4 (2019-10-19)
+------------------
+* Added query property to delayed querysets.
+* Fixed bug with count() and select_related() in MySQL
+* Added tests for Django 3.0
+
 0.1.3 (2019-04-24)
 ------------------
 * Added tests for Django 2.2

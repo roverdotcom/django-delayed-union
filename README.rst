@@ -32,9 +32,9 @@ Overview
     :alt: PyPI Package latest release
     :target: https://pypi.python.org/pypi/django-delayed-union
 
-.. |commits-since| image:: https://img.shields.io/github/commits-since/roverdotcom/django-delayed-union/v0.1.3.svg
+.. |commits-since| image:: https://img.shields.io/github/commits-since/roverdotcom/django-delayed-union/v0.1.4.svg
     :alt: Commits since latest release
-    :target: https://github.com/roverdotcom/django-delayed-union/compare/v0.1.3...master
+    :target: https://github.com/roverdotcom/django-delayed-union/compare/v0.1.4...master
 
 .. |wheel| image:: https://img.shields.io/pypi/wheel/django-delayed-union.svg
     :alt: PyPI Wheel
