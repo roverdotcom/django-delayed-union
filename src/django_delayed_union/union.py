@@ -22,10 +22,7 @@ class DelayedUnionQuerySet(DelayedQuerySet):
             else:
                 expanded_querysets.append(queryset)
 
-        return super(DelayedUnionQuerySet, self).__init__(
-            *expanded_querysets,
-            **kwargs
-        )
+        return super().__init__(*expanded_querysets, **kwargs)
 
     def _apply_operation(self):
         """

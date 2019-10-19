@@ -7,7 +7,7 @@ from django_delayed_union.base import DelayedQuerySetDescriptor
 
 class DelayedQuerySetBaseTests(TestCase):
     def setUp(self):
-        super(DelayedQuerySetBaseTests, self).setUp()
+        super().setUp()
         self.cls = DelayedUnionQuerySet
 
     def test_has_metaclass(self):

@@ -29,7 +29,7 @@ class DelayedDifferenceQuerySetTests(
 
     @classmethod
     def setUpTestData(cls):
-        super(DelayedDifferenceQuerySetTests, cls).setUpTestData()
+        super().setUpTestData()
         cls.excluded_user = UserFactory.create()
 
     def get_queryset(self):

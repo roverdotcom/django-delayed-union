@@ -1,5 +1,4 @@
 import abc
-from builtins import object
 
 from django.contrib.auth.models import User
 from django.db.models import F
@@ -7,14 +6,13 @@ from django.db.models import Q
 from django.db.models import QuerySet
 from django.db.models import sql
 from django.utils.functional import cached_property
-from future.utils import with_metaclass
 
 from django_delayed_union.base import DelayedQuerySetDescriptor
 
 from .factories import UserFactory
 
 
-class DelayedQuerySetMetaTestsMixin(with_metaclass(abc.ABCMeta, object)):
+class DelayedQuerySetMetaTestsMixin(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def get_class(self):
         """
@@ -51,15 +49,15 @@ class DelayedQuerySetMetaTestsMixin(with_metaclass(abc.ABCMeta, object)):
             self.assertIsNotNone(descriptor.__doc__)
 
 
-class DelayedQuerySetTestsMixin(with_metaclass(abc.ABCMeta, object)):
+class DelayedQuerySetTestsMixin(metaclass=abc.ABCMeta):
     @classmethod
     def setUpTestData(cls):
-        super(DelayedQuerySetTestsMixin, cls).setUpTestData()
+        super().setUpTestData()
         cls.user = UserFactory.create()
         cls.bad_id = cls.user.id - 1
 
     def setUp(self):
-        super(DelayedQuerySetTestsMixin, self).setUp()
+        super().setUp()
         self.qs = self.get_queryset()
 
     @abc.abstractmethod

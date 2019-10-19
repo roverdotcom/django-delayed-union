@@ -37,7 +37,7 @@ class DelayedIntersectionQuerySetTests(
 
     @classmethod
     def setUpTestData(cls):
-        super(DelayedIntersectionQuerySetTests, cls).setUpTestData()
+        super().setUpTestData()
         cls.user_b, cls.user_c = UserFactory.create_batch(2)
 
     def get_queryset(self):
@@ -57,7 +57,7 @@ class NestedDelayedIntersectionQuerySetTests(
 
     @classmethod
     def setUpTestData(cls):
-        super(NestedDelayedIntersectionQuerySetTests, cls).setUpTestData()
+        super().setUpTestData()
         cls.user_b, cls.user_c, cls.user_d = UserFactory.create_batch(3)
 
     def get_queryset(self):
