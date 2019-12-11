@@ -7,9 +7,7 @@ class DelayedUnionQuerySet(DelayedQuerySet):
         unexpected_kwarg = next((k for k in kwargs.keys() if k != 'all'), None)
         if unexpected_kwarg:
             raise TypeError(
-                "received an unexpected keyword argument '{}'".format(
-                    unexpected_kwarg
-                )
+                f"received an unexpected keyword argument '{unexpected_kwarg}'"
             )
 
         # Handle the case when a DelayedUnionQuerySet is passed in

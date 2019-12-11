@@ -46,16 +46,13 @@ class DelayedQuerySetDescriptor(metaclass=abc.ABCMeta):
         queryset_doc = getattr(queryset_attr, '__doc__', '')
         if queryset_doc:
             if docstring:
-                docstring += '  Documentation for *{name}*:\n'
+                docstring += f'  Documentation for *{self.name}*:\n'
             docstring += queryset_doc
 
         if inspect.ismethod(queryset_attr):
-            docstring = '{}{}\n{}'.format(
-                self.name,
-                get_formatted_function_signature(queryset_attr),
-                docstring
-            )
-        return docstring.strip().format(name=self.name)
+            signature = get_formatted_function_signature(queryset_attr)
+            docstring = f'{self.name}{signature}\n{docstring}'
+        return docstring.strip()
 
 
 class DelayedQuerySetMethod(DelayedQuerySetDescriptor):

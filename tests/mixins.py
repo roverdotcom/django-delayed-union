@@ -27,12 +27,10 @@ class DelayedQuerySetMetaTestsMixin(metaclass=abc.ABCMeta):
             lambda attr: not attr.startswith('_'),
             qs_attrs - dqs_attrs
         )
+        missing_string = ', '.join(sorted(missing))
         self.assertFalse(
             set(),
-            (
-                'The following attributes are missing'
-                ' from {}: {}'
-            ).format(cls, ', '.join(sorted(missing)))
+            f'The following attributes are missing from {cls}: {missing_string}'
         )
 
     def test_does_not_accept_non_querysets(self):
@@ -123,7 +121,7 @@ class DelayedQuerySetTestsMixin(metaclass=abc.ABCMeta):
     def test_repr(self):
         self.assertEqual(
             repr(self.qs.order_by('id')),
-            '<QuerySet {}>'.format(self.expected_models_sorted_by_id)
+            f'<QuerySet {self.expected_models_sorted_by_id}>'
         )
 
     def test_contains_true(self):
