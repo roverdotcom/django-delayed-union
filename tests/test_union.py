@@ -131,7 +131,7 @@ class NestedDelayedUnionQuerySetTests(
 
     @classmethod
     def setUpTestData(cls):
-        super(NestedDelayedUnionQuerySetTests, cls).setUpTestData()
+        super().setUpTestData()
         cls.user_b, cls.user_c = UserFactory.create_batch(2)
 
     def get_queryset(self):
@@ -150,7 +150,7 @@ class NestedDelayedUnionQuerySetTests(
 class DelayedUnionAllQuerySetTests(DelayedUnionQuerySetTestsMixin, TestCase):
     @classmethod
     def setUpTestData(cls):
-        super(DelayedUnionQuerySetTestsMixin, cls).setUpTestData()
+        super().setUpTestData()
         cls.user_b = UserFactory.create()
 
     def get_queryset(self):

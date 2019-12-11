@@ -3,7 +3,7 @@ from .base import DelayedQuerySet
 
 class DelayedDifferenceQuerySet(DelayedQuerySet):
     def __init__(self, *querysets):
-        return super(DelayedDifferenceQuerySet, self).__init__(*querysets)
+        return super().__init__(*querysets)
 
     def _apply_operation(self):
         """

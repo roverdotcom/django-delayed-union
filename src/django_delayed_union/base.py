@@ -1,15 +1,13 @@
 import abc
 import inspect
-from builtins import object
 from functools import partial
 
 from django.db.models import QuerySet
-from future.utils import with_metaclass
 
 from .utils import get_formatted_function_signature
 
 
-class DelayedQuerySetDescriptor(with_metaclass(abc.ABCMeta, object)):
+class DelayedQuerySetDescriptor(metaclass=abc.ABCMeta):
     """
     A base class for the descriptors which are used for
     :class:`DelayedQuerySet`.
@@ -48,16 +46,13 @@ class DelayedQuerySetDescriptor(with_metaclass(abc.ABCMeta, object)):
         queryset_doc = getattr(queryset_attr, '__doc__', '')
         if queryset_doc:
             if docstring:
-                docstring += '  Documentation for *{name}*:\n'
+                docstring += f'  Documentation for *{self.name}*:\n'
             docstring += queryset_doc
 
         if inspect.ismethod(queryset_attr):
-            docstring = '{}{}\n{}'.format(
-                self.name,
-                get_formatted_function_signature(queryset_attr),
-                docstring
-            )
-        return docstring.strip().format(name=self.name)
+            signature = get_formatted_function_signature(queryset_attr)
+            docstring = f'{self.name}{signature}\n{docstring}'
+        return docstring.strip()
 
 
 class DelayedQuerySetMethod(DelayedQuerySetDescriptor):
@@ -200,7 +195,7 @@ class CountPostApplyMethod(PostApplyMethod):
             return len(obj._result_cache)
 
         obj = obj.select_related(None)
-        return super(CountPostApplyMethod, self).__call__(obj, *args, **kwargs)
+        return super().__call__(obj, *args, **kwargs)
 
 
 class DelayedQuerySetBase(abc.ABCMeta):
@@ -213,10 +208,10 @@ class DelayedQuerySetBase(abc.ABCMeta):
         for key, value in attrs.items():
             if isinstance(value, DelayedQuerySetDescriptor):
                 value.set_name(key)
-        return super(DelayedQuerySetBase, cls).__new__(cls, name, bases, attrs)
+        return super().__new__(cls, name, bases, attrs)
 
 
-class DelayedQuerySet(with_metaclass(DelayedQuerySetBase, object)):
+class DelayedQuerySet(metaclass=DelayedQuerySetBase):
     """
     A class used to work around some of the issues with Django's built-in
     support for set operations with querysets (such as ``UNION``).

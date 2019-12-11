@@ -11,9 +11,7 @@ class DelayedIntersectionQuerySet(DelayedQuerySet):
             else:
                 expanded_querysets.append(queryset)
 
-        return super(DelayedIntersectionQuerySet, self).__init__(
-            *expanded_querysets
-        )
+        return super().__init__(*expanded_querysets)
 
     def _apply_operation(self):
         """

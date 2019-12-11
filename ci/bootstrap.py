@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, print_function, unicode_literals
-
 import os
 import sys
 from os.path import abspath
@@ -12,7 +10,7 @@ from os.path import join
 
 if __name__ == "__main__":
     base_path = dirname(dirname(abspath(__file__)))
-    print("Project path: {0}".format(base_path))
+    print(f"Project path: {base_path}")
     env_path = join(base_path, ".tox", "bootstrap")
     if sys.platform == "win32":
         bin_path = join(env_path, "Scripts")
@@ -21,7 +19,7 @@ if __name__ == "__main__":
     if not exists(env_path):
         import subprocess
 
-        print("Making bootstrap env in: {0} ...".format(env_path))
+        print(f"Making bootstrap env in: {env_path} ...")
         try:
             subprocess.check_call(["virtualenv", env_path])
         except subprocess.CalledProcessError:
@@ -61,5 +59,5 @@ if __name__ == "__main__":
     for name in os.listdir(join("ci", "templates")):
         with open(join(base_path, name), "w") as fh:
             fh.write(jinja.get_template(name).render(tox_environments=tox_environments))
-        print("Wrote {}".format(name))
+        print(f"Wrote {name}")
     print("DONE.")
