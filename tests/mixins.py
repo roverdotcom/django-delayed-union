@@ -30,7 +30,7 @@ class DelayedQuerySetMetaTestsMixin(with_metaclass(abc.ABCMeta, object)):
             qs_attrs - dqs_attrs
         )
         self.assertFalse(
-            set(),
+            missing,
             (
                 'The following attributes are missing'
                 ' from {}: {}'

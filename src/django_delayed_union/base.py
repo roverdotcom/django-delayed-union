@@ -320,6 +320,7 @@ class DelayedQuerySet(with_metaclass(DelayedQuerySetBase, object)):
     __or__ = NotImplementedMethod()
 
     _result_cache = PostApplyProperty()
+    _iterable_class = PostApplyProperty()
 
     _add_hints = PostApplyProperty()
     _hints = PostApplyProperty()
@@ -336,6 +337,8 @@ class DelayedQuerySet(with_metaclass(DelayedQuerySetBase, object)):
     exists = PostApplyMethod()
     none = PassthroughMethod()
     raw = PostApplyMethod()
+    explain = PostApplyMethod()
+    resolve_expression = PostApplyMethod()
 
     db = PostApplyProperty()
 
@@ -345,6 +348,7 @@ class DelayedQuerySet(with_metaclass(DelayedQuerySetBase, object)):
     values = PassthroughMethod()
     values_list = PassthroughMethod()
     annotate = PassthroughMethod()
+    alias = PassthroughMethod()
     select_related = PassthroughMethod()
     defer = PassthroughMethod()
     only = PassthroughMethod()
@@ -357,6 +361,7 @@ class DelayedQuerySet(with_metaclass(DelayedQuerySetBase, object)):
 
     create = FirstQuerySetMethod()
     bulk_create = FirstQuerySetMethod()
+    bulk_update = FirstQuerySetMethod()
 
     # These are left as not implemented at the moment.
     # We explicity put it here so that it is obvious to
