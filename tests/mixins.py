@@ -1,5 +1,4 @@
 import abc
-from builtins import object
 
 from django.contrib.auth.models import User
 from django.db.models import F
@@ -7,14 +6,13 @@ from django.db.models import Q
 from django.db.models import QuerySet
 from django.db.models import sql
 from django.utils.functional import cached_property
-from future.utils import with_metaclass
 
 from django_delayed_union.base import DelayedQuerySetDescriptor
 
 from .factories import UserFactory
 
 
-class DelayedQuerySetMetaTestsMixin(with_metaclass(abc.ABCMeta, object)):
+class DelayedQuerySetMetaTestsMixin(abc.ABC):
     @abc.abstractmethod
     def get_class(self):
         """
@@ -25,9 +23,11 @@ class DelayedQuerySetMetaTestsMixin(with_metaclass(abc.ABCMeta, object)):
         cls = self.get_class()
         qs_attrs = set(dir(QuerySet))
         dqs_attrs = set(dir(cls))
-        missing = filter(
-            lambda attr: not attr.startswith('_'),
-            qs_attrs - dqs_attrs
+        missing = list(
+            filter(
+                lambda attr: not attr.startswith('_'),
+                qs_attrs - dqs_attrs
+            )
         )
         self.assertFalse(
             missing,
@@ -51,7 +51,7 @@ class DelayedQuerySetMetaTestsMixin(with_metaclass(abc.ABCMeta, object)):
             self.assertIsNotNone(descriptor.__doc__)
 
 
-class DelayedQuerySetTestsMixin(with_metaclass(abc.ABCMeta, object)):
+class DelayedQuerySetTestsMixin(abc.ABC):
     @classmethod
     def setUpTestData(cls):
         super(DelayedQuerySetTestsMixin, cls).setUpTestData()

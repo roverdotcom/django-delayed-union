@@ -7,6 +7,7 @@ INSTALLED_APPS = [
     'user_profile',
 ]
 ROOT_URLCONF = []
+USE_TZ = False
 
 TEST_DATABASE = os.environ.get('TEST_DATABASE', 'sqlite')
 
