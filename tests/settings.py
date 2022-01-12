@@ -16,10 +16,10 @@ if TEST_DATABASE == 'mysql':
         'default': {
             'ENGINE': 'django.db.backends.mysql',
             'NAME': 'testdb',
-            'USER': 'travis',
-            'PASSWORD': '',
+            'USER': 'user',
+            'PASSWORD': 'password',
             'HOST': '127.0.0.1',
-            'PORT': 3306,
+            'PORT': 33306,
         }
     }
 elif TEST_DATABASE == 'postgresql':
@@ -28,7 +28,7 @@ elif TEST_DATABASE == 'postgresql':
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
             'NAME': 'testdb',
             'USER': 'postgres',
-            'PASSWORD': '',
+            'PASSWORD': 'postgres',
             'HOST': '127.0.0.1',
             'PORT': 5432,
         }
