@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.1.7 (2022-01-12)
+------------------
+* Fixed setup.py metadata
+
 0.1.6 (2022-01-12)
 ------------------
 * Added support for Django 3.2 and 4.0.
