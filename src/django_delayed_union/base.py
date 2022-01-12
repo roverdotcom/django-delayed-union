@@ -1,15 +1,13 @@
 import abc
 import inspect
-from builtins import object
 from functools import partial
 
 from django.db.models import QuerySet
-from future.utils import with_metaclass
 
 from .utils import get_formatted_function_signature
 
 
-class DelayedQuerySetDescriptor(with_metaclass(abc.ABCMeta, object)):
+class DelayedQuerySetDescriptor(abc.ABC):
     """
     A base class for the descriptors which are used for
     :class:`DelayedQuerySet`.
@@ -216,7 +214,7 @@ class DelayedQuerySetBase(abc.ABCMeta):
         return super(DelayedQuerySetBase, cls).__new__(cls, name, bases, attrs)
 
 
-class DelayedQuerySet(with_metaclass(DelayedQuerySetBase, object)):
+class DelayedQuerySet(metaclass=DelayedQuerySetBase):
     """
     A class used to work around some of the issues with Django's built-in
     support for set operations with querysets (such as ``UNION``).
@@ -335,6 +333,7 @@ class DelayedQuerySet(with_metaclass(DelayedQuerySetBase, object)):
     last = PostApplyMethod()
     delete = PostApplyMethod()
     exists = PostApplyMethod()
+    contains = PostApplyMethod()
     none = PassthroughMethod()
     raw = PostApplyMethod()
     explain = PostApplyMethod()
